@@ -49,27 +49,27 @@ fn draw_filled_circle(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, c
             buffer,
             size,
             IVec2::new(pos.x + x, pos.y + y),
-            IVec2::new(pos.x - x, pos.y - y),
+            IVec2::new(pos.x - x, pos.y + y),
             color,
         );
         draw_line(
             buffer,
             size,
             IVec2::new(pos.x + y, pos.y + x),
-            IVec2::new(pos.x - y, pos.y - x),
+            IVec2::new(pos.x - y, pos.y + x),
             color,
         );
         draw_line(
             buffer,
             size,
-            IVec2::new(pos.x - x, pos.y + y),
+            IVec2::new(pos.x - x, pos.y - y),
             IVec2::new(pos.x + x, pos.y - y),
             color,
         );
         draw_line(
             buffer,
             size,
-            IVec2::new(pos.x - y, pos.y + x),
+            IVec2::new(pos.x - y, pos.y - x),
             IVec2::new(pos.x + y, pos.y - x),
             color,
         );
