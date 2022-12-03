@@ -83,13 +83,72 @@ fn draw_filled_circle(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, c
     }
 }
 
+fn draw_cat(buffer: &mut [u8], size: IVec2) {
+    let body_color = 0xFFFFFFFF; // white
+    let ear_color = 0xFF888888; // gray
+    let eye_color = 0xFF000000; // black
+    let nose_color = 0xFFFF00FF; // pink
+    let whisker_color = 0xFF0000FF; // blue
+    let mouth_color = 0xFF000000; // black
+
+    // draw body
+    draw_filled_circle(buffer, size, IVec2::new(32, 32), 30, body_color);
+    draw_filled_circle(buffer, size, IVec2::new(32, 38), 26, body_color);
+    draw_filled_circle(buffer, size, IVec2::new(32, 44), 22, body_color);
+
+    // draw ears
+    draw_filled_circle(buffer, size, IVec2::new(15, 15), 7, ear_color);
+    draw_filled_circle(buffer, size, IVec2::new(49, 15), 7, ear_color);
+
+    // draw eyes
+    draw_filled_circle(buffer, size, IVec2::new(22, 22), 4, eye_color);
+    draw_filled_circle(buffer, size, IVec2::new(42, 22), 4, eye_color);
+
+    // draw nose
+    draw_line(
+        buffer,
+        size,
+        IVec2::new(32, 32),
+        IVec2::new(32, 37),
+        nose_color,
+    );
+    draw_filled_circle(buffer, size, IVec2::new(32, 37), 2, nose_color);
+
+    // draw whiskers
+    draw_line(
+        buffer,
+        size,
+        IVec2::new(27, 35),
+        IVec2::new(32, 45),
+        whisker_color,
+    );
+    draw_line(
+        buffer,
+        size,
+        IVec2::new(37, 35),
+        IVec2::new(32, 45),
+        whisker_color,
+    );
+
+    // draw mouth
+    draw_line(
+        buffer,
+        size,
+        IVec2::new(32, 40),
+        IVec2::new(32, 44),
+        mouth_color,
+    );
+}
+
 pub fn draw(buffer: &mut [u8], size: IVec2) {
-    draw_line(buffer, size, ivec2(0, 0), ivec2(100, 100), 0xff0000ff);
-    draw_line(buffer, size, ivec2(0, 50), ivec2(100, 50), 0x00ff00ff);
-    draw_line(buffer, size, ivec2(50, 0), ivec2(50, 100), 0x0000ffff);
+    //draw_line(buffer, size, ivec2(0, 0), ivec2(100, 100), 0xff0000ff);
+    //draw_line(buffer, size, ivec2(0, 50), ivec2(100, 50), 0x00ff00ff);
+    //draw_line(buffer, size, ivec2(50, 0), ivec2(50, 100), 0x0000ffff);
 
-    draw_line(buffer, size, ivec2(0, 0), ivec2(50, 100), 0xffff00ff);
-    draw_line(buffer, size, ivec2(0, 0), ivec2(100, 50), 0xffff00ff);
+    //draw_line(buffer, size, ivec2(0, 0), ivec2(50, 100), 0xffff00ff);
+    //draw_line(buffer, size, ivec2(0, 0), ivec2(100, 50), 0xffff00ff);
 
-    draw_filled_circle(buffer, size, ivec2(50, 50), 10, 0xff00ffff);
+    //draw_filled_circle(buffer, size, ivec2(50, 50), 10, 0xff00ffff);
+
+    draw_cat(buffer, size);
 }
