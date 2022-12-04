@@ -1,6 +1,8 @@
 use glam::{ivec2, IVec2};
 
-fn write_color(buffer: &mut [u8], offset: i32, color: u32) {
+fn draw_pixel(buffer: &mut [u8], size: IVec2, pos: IVec2, color: u32) {
+    let offset = 4 * (size.x * pos.y + pos.x);
+
     let Some(pixel_ref) = buffer.get_mut((offset as usize)..(offset as usize + 4)) else {
         return;
     };
@@ -26,8 +28,7 @@ fn draw_line(buffer: &mut [u8], size: IVec2, start: IVec2, end: IVec2, color: u3
 
     loop {
         if x >= 0 && x < size.x && y >= 0 && y < size.y {
-            let offset = (y * size.x + x) * 4;
-            write_color(buffer, offset, color);
+            draw_pixel(buffer, size, ivec2(x, y), color);
         }
 
         if x == end.x && y == end.y {
@@ -56,29 +57,29 @@ fn draw_filled_circle(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, c
         draw_line(
             buffer,
             size,
-            IVec2::new(pos.x + x, pos.y + y),
-            IVec2::new(pos.x - x, pos.y + y),
+            ivec2(pos.x + x, pos.y + y),
+            ivec2(pos.x - x, pos.y + y),
             color,
         );
         draw_line(
             buffer,
             size,
-            IVec2::new(pos.x + y, pos.y + x),
-            IVec2::new(pos.x - y, pos.y + x),
+            ivec2(pos.x + y, pos.y + x),
+            ivec2(pos.x - y, pos.y + x),
             color,
         );
         draw_line(
             buffer,
             size,
-            IVec2::new(pos.x - x, pos.y - y),
-            IVec2::new(pos.x + x, pos.y - y),
+            ivec2(pos.x - x, pos.y - y),
+            ivec2(pos.x + x, pos.y - y),
             color,
         );
         draw_line(
             buffer,
             size,
-            IVec2::new(pos.x - y, pos.y - x),
-            IVec2::new(pos.x + y, pos.y - x),
+            ivec2(pos.x - y, pos.y - x),
+            ivec2(pos.x + y, pos.y - x),
             color,
         );
 
@@ -97,29 +98,14 @@ fn draw_circle(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, color: u
     let mut err = 0;
 
     while x >= y {
-        let idx = 4 * (size.x * (pos.y + y) + pos.x + x);
-        write_color(buffer, idx, color);
-
-        let idx = 4 * (size.x * (pos.y + y) + pos.x - x);
-        write_color(buffer, idx, color);
-
-        let idx = 4 * (size.x * (pos.y - y) + pos.x + x);
-        write_color(buffer, idx, color);
-
-        let idx = 4 * (size.x * (pos.y - y) + pos.x - x);
-        write_color(buffer, idx, color);
-
-        let idx = 4 * (size.x * (pos.y + x) + pos.x + y);
-        write_color(buffer, idx, color);
-
-        let idx = 4 * (size.x * (pos.y + x) + pos.x - y);
-        write_color(buffer, idx, color);
-
-        let idx = 4 * (size.x * (pos.y - x) + pos.x + y);
-        write_color(buffer, idx, color);
-
-        let idx = 4 * (size.x * (pos.y - x) + pos.x - y);
-        write_color(buffer, idx, color);
+        draw_pixel(buffer, size, pos + ivec2(x, y), color);
+        draw_pixel(buffer, size, pos + ivec2(-x, y), color);
+        draw_pixel(buffer, size, pos + ivec2(x, -y), color);
+        draw_pixel(buffer, size, pos + ivec2(-x, -y), color);
+        draw_pixel(buffer, size, pos + ivec2(y, x), color);
+        draw_pixel(buffer, size, pos + ivec2(-y, x), color);
+        draw_pixel(buffer, size, pos + ivec2(y, -x), color);
+        draw_pixel(buffer, size, pos + ivec2(-y, -x), color);
 
         y += 1;
         err += 1 + 2 * y;
@@ -139,8 +125,7 @@ fn draw_filled_rectangle(
 ) {
     for x in pos.x..pos.x + rectangle_size.x {
         for y in pos.y..pos.y + rectangle_size.y {
-            let idx = 4 * (size.x * y + x);
-            write_color(buffer, idx, color);
+            draw_pixel(buffer, size, ivec2(x, y), color);
         }
     }
 }
@@ -157,8 +142,7 @@ fn draw_filled_triangle(buffer: &mut [u8], size: IVec2, a: IVec2, b: IVec2, c: I
         for y in min_y..=max_y {
             let point = (x, y);
             if is_point_in_triangle(point, a, b, c) {
-                let idx = 4 * (size.x * y + x);
-                write_color(buffer, idx, color);
+                draw_pixel(buffer, size, ivec2(x, y), color);
             }
         }
     }
