@@ -98,44 +98,28 @@ fn draw_circle(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, color: u
 
     while x >= y {
         let idx = 4 * (size.x * (pos.y + y) + pos.x + x);
-        if idx >= 0 && idx < buffer.len() as i32 {
-            write_color(buffer, idx, color);
-        }
+        write_color(buffer, idx, color);
 
         let idx = 4 * (size.x * (pos.y + y) + pos.x - x);
-        if idx >= 0 && idx < buffer.len() as i32 {
-            write_color(buffer, idx, color);
-        }
+        write_color(buffer, idx, color);
 
         let idx = 4 * (size.x * (pos.y - y) + pos.x + x);
-        if idx >= 0 && idx < buffer.len() as i32 {
-            write_color(buffer, idx, color);
-        }
+        write_color(buffer, idx, color);
 
         let idx = 4 * (size.x * (pos.y - y) + pos.x - x);
-        if idx >= 0 && idx < buffer.len() as i32 {
-            write_color(buffer, idx, color);
-        }
+        write_color(buffer, idx, color);
 
         let idx = 4 * (size.x * (pos.y + x) + pos.x + y);
-        if idx >= 0 && idx < buffer.len() as i32 {
-            write_color(buffer, idx, color);
-        }
+        write_color(buffer, idx, color);
 
         let idx = 4 * (size.x * (pos.y + x) + pos.x - y);
-        if idx >= 0 && idx < buffer.len() as i32 {
-            write_color(buffer, idx, color);
-        }
+        write_color(buffer, idx, color);
 
         let idx = 4 * (size.x * (pos.y - x) + pos.x + y);
-        if idx >= 0 && idx < buffer.len() as i32 {
-            write_color(buffer, idx, color);
-        }
+        write_color(buffer, idx, color);
 
         let idx = 4 * (size.x * (pos.y - x) + pos.x - y);
-        if idx >= 0 && idx < buffer.len() as i32 {
-            write_color(buffer, idx, color);
-        }
+        write_color(buffer, idx, color);
 
         y += 1;
         err += 1 + 2 * y;
@@ -156,9 +140,7 @@ fn draw_filled_rectangle(
     for x in pos.x..pos.x + rectangle_size.x {
         for y in pos.y..pos.y + rectangle_size.y {
             let idx = 4 * (size.x * y + x);
-            if idx >= 0 && idx < buffer.len() as i32 {
-                write_color(buffer, idx, color);
-            }
+            write_color(buffer, idx, color);
         }
     }
 }
@@ -176,9 +158,7 @@ fn draw_filled_triangle(buffer: &mut [u8], size: IVec2, a: IVec2, b: IVec2, c: I
             let point = (x, y);
             if is_point_in_triangle(point, a, b, c) {
                 let idx = 4 * (size.x * y + x);
-                if idx >= 0 && idx < buffer.len() as i32 {
-                    write_color(buffer, idx, color);
-                }
+                write_color(buffer, idx, color);
             }
         }
     }
