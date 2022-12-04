@@ -146,6 +146,23 @@ fn draw_circle(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, color: u
     }
 }
 
+fn draw_filled_rectangle(
+    buffer: &mut [u8],
+    size: IVec2,
+    pos: IVec2,
+    rectangle_size: IVec2,
+    color: u32,
+) {
+    for x in pos.x..pos.x + rectangle_size.x {
+        for y in pos.y..pos.y + rectangle_size.y {
+            let idx = 4 * (size.x * y + x);
+            if idx >= 0 && idx < buffer.len() as i32 {
+                write_color(buffer, idx, color);
+            }
+        }
+    }
+}
+
 fn draw_cat(buffer: &mut [u8], size: IVec2) {
     let body_color = 0xFFFFFFFF; // white
     let ear_color = 0xFF888888; // gray
@@ -215,5 +232,7 @@ pub fn draw(buffer: &mut [u8], size: IVec2) {
 
     draw_cat(buffer, size);
 
-    draw_circle(buffer, size, ivec2(100, 100), 50, 0xffffffff)
+    draw_circle(buffer, size, ivec2(100, 100), 50, 0xffffffff);
+
+    draw_filled_rectangle(buffer, size, ivec2(200, 100), ivec2(50, 30), 0x0055ffff);
 }
