@@ -127,6 +127,16 @@ fn draw_circle(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, color: u
             write_color(buffer, idx, color);
         }
 
+        let idx = 4 * (size.x * (pos.y - x) + pos.x + y);
+        if idx >= 0 && idx < buffer.len() as i32 {
+            write_color(buffer, idx, color);
+        }
+
+        let idx = 4 * (size.x * (pos.y - x) + pos.x - y);
+        if idx >= 0 && idx < buffer.len() as i32 {
+            write_color(buffer, idx, color);
+        }
+
         y += 1;
         err += 1 + 2 * y;
         if 2 * (err - x) + 1 > 0 {
