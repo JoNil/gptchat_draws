@@ -163,36 +163,18 @@ fn draw_filled_rectangle(
     }
 }
 
-fn draw_star(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, color: u32) {
-    // Calculate the coordinates of the points of the star
-    let points = [
-        (pos.x as f64, pos.y as f64 - radius as f64),
-        (
-            pos.x as f64 + radius as f64 * 3.0f64.sqrt() / 2.0,
-            pos.y as f64 - radius as f64 / 2.0,
-        ),
-        (pos.x as f64 + radius as f64, pos.y as f64),
-        (
-            pos.x as f64 + radius as f64 * 3.0f64.sqrt() / 2.0,
-            pos.y as f64 + radius as f64 / 2.0,
-        ),
-        (pos.x as f64, pos.y as f64 + radius as f64),
-        (
-            pos.x as f64 - radius as f64 * 3.0f64.sqrt() / 2.0,
-            pos.y as f64 + radius as f64 / 2.0,
-        ),
-        (pos.x as f64 - radius as f64, pos.y as f64),
-        (
-            pos.x as f64 - radius as f64 * 3.0f64.sqrt() / 2.0,
-            pos.y as f64 - radius as f64 / 2.0,
-        ),
-    ];
+fn draw_filled_triangle(buffer: &mut [u8], size: IVec2, a: IVec2, b: IVec2, c: IVec2, color: u32) {
+    // Calculate the bounding box of the triangle
+    let min_x = a.x.min(b.x).min(c.x);
+    let min_y = a.y.min(b.y).min(c.y);
+    let max_x = a.x.max(b.x).max(c.x);
+    let max_y = a.y.max(b.y).max(c.y);
 
-    // Draw a filled polygon using the calculated points
-    for x in 0..size.x {
-        for y in 0..size.y {
-            let point = (x as f64, y as f64);
-            if is_point_in_polygon(point, &points) {
+    // Iterate over the bounding box and check if each point is inside the triangle
+    for x in min_x..=max_x {
+        for y in min_y..=max_y {
+            let point = (x, y);
+            if is_point_in_triangle(point, a, b, c) {
                 let idx = 4 * (size.x * y + x);
                 if idx >= 0 && idx < buffer.len() as i32 {
                     write_color(buffer, idx, color);
@@ -202,30 +184,20 @@ fn draw_star(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, color: u32
     }
 }
 
-// Check if a given point is inside a polygon
-fn is_point_in_polygon(point: (f64, f64), polygon: &[(f64, f64)]) -> bool {
+// Check if a given point is inside a triangle
+fn is_point_in_triangle(point: (i32, i32), a: IVec2, b: IVec2, c: IVec2) -> bool {
     let (x, y) = point;
-    let mut inside = false;
+    let a = (a.x as f64, a.y as f64);
+    let b = (b.x as f64, b.y as f64);
+    let c = (c.x as f64, c.y as f64);
 
-    let (mut xi, mut yi) = polygon[polygon.len() - 1];
-    for &(xj, yj) in polygon {
-        if yi > yj {
-            std::mem::swap(&mut yi, &mut yj);
-            std::mem::swap(&mut xi, &mut xj);
-        }
+    // Calculate the barycentric coordinates of the point with respect to the triangle
+    let denominator = (b.1 - c.1) * (a.0 - c.0) + (c.0 - b.0) * (a.1 - c.1);
+    let lambda_1 = ((b.1 - c.1) * (x as f64 - c.0) + (c.0 - b.0) * (y as f64 - c.1)) / denominator;
+    let lambda_2 = ((c.1 - a.1) * (x as f64 - c.0) + (a.0 - c.0) * (y as f64 - c.1)) / denominator;
 
-        if y > yi && y <= yj {
-            let d = (xj - xi) * (y - yi) - (x - xi) * (yj - yi);
-            if d > 0.0 {
-                inside = !inside;
-            }
-        }
-
-        xi = xj;
-        yi = yj;
-    }
-
-    inside
+    // The point is inside the triangle if the barycentric coordinates are positive and sum to 1
+    lambda_1 >= 0.0 && lambda_2 >= 0.0 && lambda_1 + lambda_2 <= 1.0
 }
 
 fn draw_cat(buffer: &mut [u8], size: IVec2) {
@@ -287,6 +259,15 @@ fn draw_cat(buffer: &mut [u8], size: IVec2) {
 
 pub fn draw(buffer: &mut [u8], size: IVec2) {
     draw_filled_rectangle(buffer, size, IVec2::ZERO, size, 0x005511ff);
+
+    draw_filled_triangle(
+        buffer,
+        size,
+        ivec2(size.x, 0),
+        ivec2(0, size.y),
+        size - ivec2(20, 20),
+        0x552211ff,
+    );
 
     draw_line(buffer, size, ivec2(0, 0), ivec2(100, 100), 0xff0000ff);
     draw_line(buffer, size, ivec2(0, 50), ivec2(100, 50), 0x00ff00ff);
