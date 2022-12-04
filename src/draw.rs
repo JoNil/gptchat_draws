@@ -1,5 +1,16 @@
 use glam::{ivec2, IVec2};
 
+fn write_color(buffer: &mut [u8], offset: i32, color: u32) {
+    let Some(pixel_ref) = buffer.get_mut((offset as usize)..(offset as usize + 4)) else {
+        return;
+    };
+
+    pixel_ref[0] = (color >> 24) as u8;
+    pixel_ref[1] = (color >> 16) as u8;
+    pixel_ref[2] = (color >> 8) as u8;
+    pixel_ref[3] = color as u8;
+}
+
 fn draw_line(buffer: &mut [u8], size: IVec2, start: IVec2, end: IVec2, color: u32) {
     let mut x = start.x;
     let mut y = start.y;
@@ -16,10 +27,7 @@ fn draw_line(buffer: &mut [u8], size: IVec2, start: IVec2, end: IVec2, color: u3
     loop {
         if x >= 0 && x < size.x && y >= 0 && y < size.y {
             let offset = (y * size.x + x) * 4;
-            buffer[offset as usize] = (color >> 24) as u8;
-            buffer[offset as usize + 1] = (color >> 16) as u8;
-            buffer[offset as usize + 2] = (color >> 8) as u8;
-            buffer[offset as usize + 3] = color as u8;
+            write_color(buffer, offset, color);
         }
 
         if x == end.x && y == end.y {
@@ -73,6 +81,51 @@ fn draw_filled_circle(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, c
             IVec2::new(pos.x + y, pos.y - x),
             color,
         );
+
+        y += 1;
+        err += 1 + 2 * y;
+        if 2 * (err - x) + 1 > 0 {
+            x -= 1;
+            err += 1 - 2 * x;
+        }
+    }
+}
+
+fn draw_circle(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, color: u32) {
+    let mut x = radius;
+    let mut y = 0;
+    let mut err = 0;
+
+    while x >= y {
+        let idx = 4 * (size.x * (pos.y + y) + pos.x + x);
+        if idx >= 0 && idx < buffer.len() as i32 {
+            write_color(buffer, idx, color);
+        }
+
+        let idx = 4 * (size.x * (pos.y + y) + pos.x - x);
+        if idx >= 0 && idx < buffer.len() as i32 {
+            write_color(buffer, idx, color);
+        }
+
+        let idx = 4 * (size.x * (pos.y - y) + pos.x + x);
+        if idx >= 0 && idx < buffer.len() as i32 {
+            write_color(buffer, idx, color);
+        }
+
+        let idx = 4 * (size.x * (pos.y - y) + pos.x - x);
+        if idx >= 0 && idx < buffer.len() as i32 {
+            write_color(buffer, idx, color);
+        }
+
+        let idx = 4 * (size.x * (pos.y + x) + pos.x + y);
+        if idx >= 0 && idx < buffer.len() as i32 {
+            write_color(buffer, idx, color);
+        }
+
+        let idx = 4 * (size.x * (pos.y + x) + pos.x - y);
+        if idx >= 0 && idx < buffer.len() as i32 {
+            write_color(buffer, idx, color);
+        }
 
         y += 1;
         err += 1 + 2 * y;
@@ -141,14 +194,16 @@ fn draw_cat(buffer: &mut [u8], size: IVec2) {
 }
 
 pub fn draw(buffer: &mut [u8], size: IVec2) {
-    //draw_line(buffer, size, ivec2(0, 0), ivec2(100, 100), 0xff0000ff);
-    //draw_line(buffer, size, ivec2(0, 50), ivec2(100, 50), 0x00ff00ff);
-    //draw_line(buffer, size, ivec2(50, 0), ivec2(50, 100), 0x0000ffff);
+    draw_line(buffer, size, ivec2(0, 0), ivec2(100, 100), 0xff0000ff);
+    draw_line(buffer, size, ivec2(0, 50), ivec2(100, 50), 0x00ff00ff);
+    draw_line(buffer, size, ivec2(50, 0), ivec2(50, 100), 0x0000ffff);
 
-    //draw_line(buffer, size, ivec2(0, 0), ivec2(50, 100), 0xffff00ff);
-    //draw_line(buffer, size, ivec2(0, 0), ivec2(100, 50), 0xffff00ff);
+    draw_line(buffer, size, ivec2(0, 0), ivec2(50, 100), 0xffff00ff);
+    draw_line(buffer, size, ivec2(0, 0), ivec2(100, 50), 0xffff00ff);
 
-    //draw_filled_circle(buffer, size, ivec2(50, 50), 10, 0xff00ffff);
+    draw_filled_circle(buffer, size, ivec2(50, 50), 10, 0xff00ffff);
 
     draw_cat(buffer, size);
+
+    draw_circle(buffer, size, ivec2(100, 100), 50, 0xffffffff)
 }
