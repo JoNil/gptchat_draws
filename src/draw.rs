@@ -163,6 +163,71 @@ fn draw_filled_rectangle(
     }
 }
 
+fn draw_star(buffer: &mut [u8], size: IVec2, pos: IVec2, radius: i32, color: u32) {
+    // Calculate the coordinates of the points of the star
+    let points = [
+        (pos.x as f64, pos.y as f64 - radius as f64),
+        (
+            pos.x as f64 + radius as f64 * 3.0f64.sqrt() / 2.0,
+            pos.y as f64 - radius as f64 / 2.0,
+        ),
+        (pos.x as f64 + radius as f64, pos.y as f64),
+        (
+            pos.x as f64 + radius as f64 * 3.0f64.sqrt() / 2.0,
+            pos.y as f64 + radius as f64 / 2.0,
+        ),
+        (pos.x as f64, pos.y as f64 + radius as f64),
+        (
+            pos.x as f64 - radius as f64 * 3.0f64.sqrt() / 2.0,
+            pos.y as f64 + radius as f64 / 2.0,
+        ),
+        (pos.x as f64 - radius as f64, pos.y as f64),
+        (
+            pos.x as f64 - radius as f64 * 3.0f64.sqrt() / 2.0,
+            pos.y as f64 - radius as f64 / 2.0,
+        ),
+    ];
+
+    // Draw a filled polygon using the calculated points
+    for x in 0..size.x {
+        for y in 0..size.y {
+            let point = (x as f64, y as f64);
+            if is_point_in_polygon(point, &points) {
+                let idx = 4 * (size.x * y + x);
+                if idx >= 0 && idx < buffer.len() as i32 {
+                    write_color(buffer, idx, color);
+                }
+            }
+        }
+    }
+}
+
+// Check if a given point is inside a polygon
+fn is_point_in_polygon(point: (f64, f64), polygon: &[(f64, f64)]) -> bool {
+    let (x, y) = point;
+    let mut inside = false;
+
+    let (mut xi, mut yi) = polygon[polygon.len() - 1];
+    for &(xj, yj) in polygon {
+        if yi > yj {
+            std::mem::swap(&mut yi, &mut yj);
+            std::mem::swap(&mut xi, &mut xj);
+        }
+
+        if y > yi && y <= yj {
+            let d = (xj - xi) * (y - yi) - (x - xi) * (yj - yi);
+            if d > 0.0 {
+                inside = !inside;
+            }
+        }
+
+        xi = xj;
+        yi = yj;
+    }
+
+    inside
+}
+
 fn draw_cat(buffer: &mut [u8], size: IVec2) {
     let body_color = 0xFFFFFFFF; // white
     let ear_color = 0xFF888888; // gray
@@ -221,6 +286,8 @@ fn draw_cat(buffer: &mut [u8], size: IVec2) {
 }
 
 pub fn draw(buffer: &mut [u8], size: IVec2) {
+    draw_filled_rectangle(buffer, size, IVec2::ZERO, size, 0x005511ff);
+
     draw_line(buffer, size, ivec2(0, 0), ivec2(100, 100), 0xff0000ff);
     draw_line(buffer, size, ivec2(0, 50), ivec2(100, 50), 0x00ff00ff);
     draw_line(buffer, size, ivec2(50, 0), ivec2(50, 100), 0x0000ffff);
