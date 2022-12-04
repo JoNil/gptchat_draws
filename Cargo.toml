@@ -1,5 +1,5 @@
 [package]
-name = "gptchat_test"
+name = "gptchat_draws"
 version = "0.1.0"
 edition = "2021"
 
