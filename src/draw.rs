@@ -253,7 +253,7 @@ fn draw_uniform_cubic_b_spline(buffer: &mut [u8], size: IVec2, points: &[IVec2],
         let p3 = points[i + 3].as_vec2();
 
         // Iterate over the steps of the uniform cubic B-spline segment
-        for t in 0..32 {
+        for t in 0..=32 {
             // Compute the interpolated x and y coordinates
             let t = t as f32 / 32.0;
             let ct = C * t;
