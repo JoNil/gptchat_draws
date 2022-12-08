@@ -3,14 +3,12 @@ use glam::{ivec2, IVec2};
 fn draw_pixel(buffer: &mut [u8], size: IVec2, pos: IVec2, color: u32) {
     let offset = 4 * (size.x * pos.y + pos.x);
 
-    let Some(pixel_ref) = buffer.get_mut((offset as usize)..(offset as usize + 4)) else {
-        return;
-    };
-
-    pixel_ref[0] = (color >> 24) as u8;
-    pixel_ref[1] = (color >> 16) as u8;
-    pixel_ref[2] = (color >> 8) as u8;
-    pixel_ref[3] = color as u8;
+    if let Some(pixel_ref) = buffer.get_mut((offset as usize)..(offset as usize + 4)) {
+        pixel_ref[0] = (color >> 24) as u8;
+        pixel_ref[1] = (color >> 16) as u8;
+        pixel_ref[2] = (color >> 8) as u8;
+        pixel_ref[3] = color as u8;
+    }
 }
 
 fn draw_line(buffer: &mut [u8], size: IVec2, start: IVec2, end: IVec2, color: u32) {
@@ -131,37 +129,53 @@ fn draw_filled_rectangle(
 }
 
 fn draw_filled_triangle(buffer: &mut [u8], size: IVec2, a: IVec2, b: IVec2, c: IVec2, color: u32) {
-    // Calculate the bounding box of the triangle
-    let min_x = a.x.min(b.x).min(c.x);
-    let min_y = a.y.min(b.y).min(c.y);
-    let max_x = a.x.max(b.x).max(c.x);
-    let max_y = a.y.max(b.y).max(c.y);
+    // Sort the points so that a.y <= b.y <= c.y
+    let (a, b, c) = sort_points(a, b, c);
 
-    // Iterate over the bounding box and check if each point is inside the triangle
-    for x in min_x..=max_x {
-        for y in min_y..=max_y {
-            let point = (x, y);
-            if is_point_in_triangle(point, a, b, c) {
-                draw_pixel(buffer, size, ivec2(x, y), color);
-            }
+    // Compute the slopes of the edges of the triangle
+    let slope_ab = (b.x - a.x) as f32 / (b.y - a.y) as f32;
+    let slope_bc = (c.x - b.x) as f32 / (c.y - b.y) as f32;
+    let slope_ca = (a.x - c.x) as f32 / (a.y - c.y) as f32;
+
+    // Iterate over the scanlines of the triangle
+    for y in a.y..c.y {
+        let x1: f32;
+        let x2: f32;
+
+        if y < b.y {
+            // Compute the x coordinates of the left and right edges of the scanline
+            x1 = a.x as f32 + (y - a.y) as f32 * slope_ab;
+            x2 = a.x as f32 + (y - a.y) as f32 * slope_ca;
+        } else {
+            // Compute the x coordinates of the left and right edges of the scanline
+            x1 = b.x as f32 + (y - b.y) as f32 * slope_bc;
+            x2 = a.x as f32 + (y - a.y) as f32 * slope_ca;
+        }
+
+        // Compute the starting and ending x coordinates of the scanline
+        let start_x = x1.min(x2) as i32;
+        let end_x = x1.max(x2) as i32;
+
+        // Iterate over the pixels of the scanline and fill in the ones that are inside the triangle
+        for x in start_x..end_x {
+            let p = ivec2(x, y);
+            draw_pixel(buffer, size, p, color);
         }
     }
 }
 
-// Check if a given point is inside a triangle
-fn is_point_in_triangle(point: (i32, i32), a: IVec2, b: IVec2, c: IVec2) -> bool {
-    let (x, y) = point;
-    let a = (a.x as f64, a.y as f64);
-    let b = (b.x as f64, b.y as f64);
-    let c = (c.x as f64, c.y as f64);
-
-    // Calculate the barycentric coordinates of the point with respect to the triangle
-    let denominator = (b.1 - c.1) * (a.0 - c.0) + (c.0 - b.0) * (a.1 - c.1);
-    let lambda_1 = ((b.1 - c.1) * (x as f64 - c.0) + (c.0 - b.0) * (y as f64 - c.1)) / denominator;
-    let lambda_2 = ((c.1 - a.1) * (x as f64 - c.0) + (a.0 - c.0) * (y as f64 - c.1)) / denominator;
-
-    // The point is inside the triangle if the barycentric coordinates are positive and sum to 1
-    lambda_1 >= 0.0 && lambda_2 >= 0.0 && lambda_1 + lambda_2 <= 1.0
+fn sort_points(a: IVec2, b: IVec2, c: IVec2) -> (IVec2, IVec2, IVec2) {
+    let mut points = [a, b, c];
+    if points[0].y > points[1].y {
+        points.swap(0, 1);
+    }
+    if points[1].y > points[2].y {
+        points.swap(1, 2);
+    }
+    if points[0].y > points[1].y {
+        points.swap(0, 1);
+    }
+    (points[0], points[1], points[2])
 }
 
 fn draw_cat(buffer: &mut [u8], size: IVec2) {
