@@ -158,8 +158,7 @@ fn draw_filled_triangle(buffer: &mut [u8], size: IVec2, a: IVec2, b: IVec2, c: I
 
         // Iterate over the pixels of the scanline and fill in the ones that are inside the triangle
         for x in start_x..end_x {
-            let p = ivec2(x, y);
-            draw_pixel(buffer, size, p, color);
+            draw_pixel(buffer, size, ivec2(x, y), color);
         }
     }
 }
