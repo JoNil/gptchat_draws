@@ -234,27 +234,27 @@ fn draw_cat(buffer: &mut [u8], size: IVec2) {
     );
 }
 
-fn draw_b_spline(buffer: &mut [u8], size: IVec2, points: &[IVec2], color: u32) {
-    // Check if there are enough points to draw a B-spline
+fn draw_uniform_cubic_b_spline(buffer: &mut [u8], size: IVec2, points: &[IVec2], color: u32) {
+    // Check if there are enough points to draw a uniform cubic B-spline
     if points.len() < 4 {
         return;
     }
 
     // Compute the B-spline coefficients
     let b0 = 1.0 / 6.0;
-    let b1 = 2.0 / 3.0;
+    let b1 = 4.0 / 6.0;
     let b2 = 1.0 / 6.0;
 
-    // Iterate over the control points of the B-spline
+    // Iterate over the control points of the uniform cubic B-spline
     let mut prev_pos = points[0];
     for i in 0..points.len() - 3 {
-        // Compute the coordinates of the current B-spline segment
+        // Compute the coordinates of the current uniform cubic B-spline segment
         let p0 = points[i];
         let p1 = points[i + 1];
         let p2 = points[i + 2];
         let p3 = points[i + 3];
 
-        // Iterate over the steps of the B-spline segment
+        // Iterate over the steps of the uniform cubic B-spline segment
         for t in 0..100 {
             // Compute the interpolated x and y coordinates
             let t = t as f32 / 100.0;
@@ -267,13 +267,14 @@ fn draw_b_spline(buffer: &mut [u8], size: IVec2, points: &[IVec2], color: u32) {
                 + b2 * p2.y as f32 * (1.0 - t) * t.powi(2)
                 + b0 * p3.y as f32 * t.powi(3);
 
-            // Draw the current B-spline point
+            // Draw the current uniform cubic B-spline point
             let pos = IVec2::new(x as i32, y as i32);
             draw_line(buffer, size, prev_pos, pos, color);
             prev_pos = pos;
         }
     }
 }
+
 pub fn draw(buffer: &mut [u8], size: IVec2) {
     draw_filled_rectangle(buffer, size, IVec2::ZERO, size, 0x005511ff);
 
@@ -301,7 +302,7 @@ pub fn draw(buffer: &mut [u8], size: IVec2) {
 
     draw_filled_rectangle(buffer, size, ivec2(200, 100), ivec2(50, 30), 0x0055ffff);
 
-    draw_b_spline(
+    draw_uniform_cubic_b_spline(
         buffer,
         size,
         &[
