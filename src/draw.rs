@@ -234,6 +234,45 @@ fn draw_cat(buffer: &mut [u8], size: IVec2) {
     );
 }
 
+fn draw_b_spline(buffer: &mut [u8], size: IVec2, points: &[IVec2], color: u32) {
+    // Check if there are enough points to draw a B-spline
+    if points.len() < 4 {
+        return;
+    }
+
+    // Compute the B-spline coefficients
+    let b0 = 1.0 / 6.0;
+    let b1 = 2.0 / 3.0;
+    let b2 = 1.0 / 6.0;
+
+    // Iterate over the control points of the B-spline
+    for i in 0..points.len() - 3 {
+        // Compute the coordinates of the current B-spline segment
+        let p0 = points[i];
+        let p1 = points[i + 1];
+        let p2 = points[i + 2];
+        let p3 = points[i + 3];
+
+        // Iterate over the steps of the B-spline segment
+        for t in 0..100 {
+            // Compute the interpolated x and y coordinates
+            let t = t as f32 / 100.0;
+            let x = b0 * p0.x as f32 * (1.0 - t).powi(3)
+                + b1 * p1.x as f32 * (1.0 - t).powi(2) * t
+                + b2 * p2.x as f32 * (1.0 - t) * t.powi(2)
+                + b0 * p3.x as f32 * t.powi(3);
+            let y = b0 * p0.y as f32 * (1.0 - t).powi(3)
+                + b1 * p1.y as f32 * (1.0 - t).powi(2) * t
+                + b2 * p2.y as f32 * (1.0 - t) * t.powi(2)
+                + b0 * p3.y as f32 * t.powi(3);
+
+            // Draw the current B-spline point
+            let pos = IVec2::new(x as i32, y as i32);
+            draw_pixel(buffer, size, pos, color);
+        }
+    }
+}
+
 pub fn draw(buffer: &mut [u8], size: IVec2) {
     draw_filled_rectangle(buffer, size, IVec2::ZERO, size, 0x005511ff);
 
@@ -260,4 +299,16 @@ pub fn draw(buffer: &mut [u8], size: IVec2) {
     draw_circle(buffer, size, ivec2(100, 100), 50, 0xffffffff);
 
     draw_filled_rectangle(buffer, size, ivec2(200, 100), ivec2(50, 30), 0x0055ffff);
+
+    draw_b_spline(
+        buffer,
+        size,
+        &[
+            ivec2(size.x, 0),
+            ivec2(0, size.y),
+            size - ivec2(20, 20),
+            ivec2(0, 0),
+        ],
+        0xff0000ff,
+    )
 }
