@@ -246,7 +246,7 @@ fn draw_uniform_cubic_b_spline(buffer: &mut [u8], size: IVec2, points: &[IVec2],
     let b2 = 1.0 / 6.0;
 
     // Iterate over the control points of the uniform cubic B-spline
-    let mut prev_pos = points[0];
+    let mut prev_pos = IVec2::new(0, 0);
     for i in 0..points.len() - 3 {
         // Compute the coordinates of the current uniform cubic B-spline segment
         let p0 = points[i];
@@ -255,9 +255,9 @@ fn draw_uniform_cubic_b_spline(buffer: &mut [u8], size: IVec2, points: &[IVec2],
         let p3 = points[i + 3];
 
         // Iterate over the steps of the uniform cubic B-spline segment
-        for t in 0..100 {
+        for t in 0..32 {
             // Compute the interpolated x and y coordinates
-            let t = t as f32 / 100.0;
+            let t = t as f32 / 32.0;
             let x = b0 * p0.x as f32 * (1.0 - t).powi(3)
                 + b1 * p1.x as f32 * (1.0 - t).powi(2) * t
                 + b2 * p2.x as f32 * (1.0 - t) * t.powi(2)
@@ -269,7 +269,9 @@ fn draw_uniform_cubic_b_spline(buffer: &mut [u8], size: IVec2, points: &[IVec2],
 
             // Draw the current uniform cubic B-spline point
             let pos = IVec2::new(x as i32, y as i32);
-            draw_line(buffer, size, prev_pos, pos, color);
+            if t > 0.0 {
+                draw_line(buffer, size, prev_pos, pos, color);
+            }
             prev_pos = pos;
         }
     }
@@ -306,12 +308,10 @@ pub fn draw(buffer: &mut [u8], size: IVec2) {
         buffer,
         size,
         &[
-            ivec2(size.x, 0),
-            ivec2(0, size.y),
-            size - ivec2(20, 20),
-            ivec2(0, 0),
-            ivec2(0, size.y),
-            ivec2(size.x, size.y),
+            ivec2(50, 50),
+            ivec2(size.x - 50, 50),
+            ivec2(size.x - 50, size.y - 50),
+            ivec2(50, size.y - 50),
         ],
         0xff0000ff,
     )
