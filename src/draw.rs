@@ -246,6 +246,7 @@ fn draw_b_spline(buffer: &mut [u8], size: IVec2, points: &[IVec2], color: u32) {
     let b2 = 1.0 / 6.0;
 
     // Iterate over the control points of the B-spline
+    let mut prev_pos = points[0];
     for i in 0..points.len() - 3 {
         // Compute the coordinates of the current B-spline segment
         let p0 = points[i];
@@ -254,7 +255,6 @@ fn draw_b_spline(buffer: &mut [u8], size: IVec2, points: &[IVec2], color: u32) {
         let p3 = points[i + 3];
 
         // Iterate over the steps of the B-spline segment
-        let mut prev_pos = IVec2::new(0, 0);
         for t in 0..100 {
             // Compute the interpolated x and y coordinates
             let t = t as f32 / 100.0;
@@ -269,14 +269,11 @@ fn draw_b_spline(buffer: &mut [u8], size: IVec2, points: &[IVec2], color: u32) {
 
             // Draw the current B-spline point
             let pos = IVec2::new(x as i32, y as i32);
-            if t > 0.0 {
-                draw_line(buffer, size, prev_pos, pos, color);
-            }
+            draw_line(buffer, size, prev_pos, pos, color);
             prev_pos = pos;
         }
     }
 }
-
 pub fn draw(buffer: &mut [u8], size: IVec2) {
     draw_filled_rectangle(buffer, size, IVec2::ZERO, size, 0x005511ff);
 
